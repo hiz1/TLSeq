@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "TimerPhase.h"
+#include "TimerTL.h"
 
 #define TILESIZE 80
 #define MARGIN   4
@@ -28,5 +28,5 @@ class ofApp : public ofBaseApp{
 private:
     ofCamera camera;
     ofVec2f  pos;
-    Phase   *phase;
+    Timeline *tl;
 };

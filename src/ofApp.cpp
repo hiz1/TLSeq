@@ -12,15 +12,15 @@ void ofApp::setup(){
     camera.setPosition(0, 0, 700);
     pos = ofVec2f(int(TILEROW/2), 3);
     
-    phase = new TimerPhase(ofVec2f(10, 10), 400, 120);
+    tl = new TimerTL(ofVec2f(10, 10), 400, 120);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     camera.lookAt(ofVec3f::zero());
     
-    if(phase != NULL) {
-        if(phase->update()) phase = NULL;
+    if(tl != NULL) {
+        if(tl->update()) tl = NULL;
     }
 }
 
@@ -51,8 +51,8 @@ void ofApp::draw(){
     ofPopMatrix();
     camera.end();
     
-    if(phase != NULL) {
-        phase->draw();
+    if(tl != NULL) {
+        tl->draw();
     }
 }
 
@@ -64,31 +64,33 @@ void ofApp::keyPressed(int key){
     if(key == OF_KEY_LEFT )pos.x --;
     if(key == OF_KEY_RIGHT)pos.x ++;
     
+    tl->keyPressed(key);
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    tl->keyReleased(key);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-
+    tl->mouseMoved(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-
+    tl->mouseDragged(x, y, button);
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    tl->mousePressed(x, y, button);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-
+    tl->mouseReleased(x, y, button);
 }
 
 //--------------------------------------------------------------
@@ -98,7 +100,7 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
-
+    tl->gotMessage(msg);
 }
 
 //--------------------------------------------------------------
