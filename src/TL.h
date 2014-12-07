@@ -1,38 +1,39 @@
 //
-//  Timeline.h
+//  TL.h
 //  katamichi001
 //
 //  Created by hiz on 2014/12/03.
 //
 //
 
-#ifndef katamichi001_Timeline_h
-#define katamichi001_Timeline_h
+#ifndef katamichi001_TL_h
+#define katamichi001_TL_h
 
-class Timeline;
+class TL;
 
 // DONE:Sequenceを順番に実行
-// TODO:入力処理
-// TODO:Sequenceの途中で別Sequenceに移行
-// TODO:Timelineの並列実行
-// TODO:Timeline間のメッセージング
-// TODO:Sequenceの返値（必要？）
+// DONE:入力処理
+// DONE:Sequenceの返値。Seq終了時に値を返す
+// DONE:Sequenceの途中で別Sequenceに移行←返値によってTL側で次のSeqを決める
+// TODO:Sequence終了時の処理をSeqと戻り値によって変更
+// TODO:TLの並列実行
+// TODO:TL間のメッセージング
 // TODO:Sequenceの親子関係（必要？）
 
 class Seq {
 public:
-    Seq(Timeline &tl) : _tl(tl){
+    Seq(TL &tl) : _tl(tl){
         setup();
     }
     virtual void setup() {
         _frame = 0;
     }
-    virtual bool update() {
+    virtual string* update() {
         _frame ++;
-        return false;
+        return NULL;
     }
     int    frame() { return _frame;}
-    Timeline &tl() { return _tl;}
+    TL &tl() { return _tl;}
     virtual void keyPressed(int key) {}
     virtual void keyReleased(int key) {}
     virtual void mouseMoved(int x, int y ) {}
@@ -42,23 +43,23 @@ public:
     virtual void gotMessage(ofMessage msg) {}
 private:
     int    _frame;
-    Timeline &_tl;
+    TL &_tl;
 };
 
-class Timeline {
+class TL {
 public:
     // 指定フレーム数だけウエイトするSeq
     class WaitSeq : public Seq {
     public:
         typedef Seq base;
         
-        WaitSeq(Timeline &phase, int waitFrame)
+        WaitSeq(TL &phase, int waitFrame)
         : Seq(phase), waitFrame(waitFrame) {}
         
-        virtual bool update() {
+        virtual string* update() {
             base::update();
-            if(frame() >= waitFrame)return true;
-            return false;
+            if(frame() >= waitFrame)return new string;
+            return NULL;
         }
     private:
         const int waitFrame;
@@ -69,38 +70,41 @@ public:
     public:
         typedef Seq base;
         
-        InputSeq(Timeline &phase, vector<int> acceptKeys, int waitFrame = -1)
+        InputSeq(TL &phase, vector<int> acceptKeys, int waitFrame = -1)
         : Seq(phase),acceptKeys(acceptKeys), waitFrame(waitFrame) {}
         
         virtual void setup() {
             base::setup();
-            inputed = false;
+            inputedKey = -1;
         }
         
-        virtual bool update() {
+        virtual string* update() {
             base::update();
-            if(inputed) return true;
-            if(waitFrame >= 0 && frame() >= waitFrame)return true;
-            return false;
+            if(inputedKey >= 0) {
+                char result[1] = {char(inputedKey)};
+                return new string(result);
+            }
+            if(waitFrame >= 0 && frame() >= waitFrame)return new string();
+            return NULL;
         }
         
         virtual void keyPressed(int key) {
             vector< int >::iterator cIter = find( acceptKeys.begin(),acceptKeys.end() , key );
-            if(cIter != acceptKeys.end()) inputed = true;
+            if(cIter != acceptKeys.end()) inputedKey = key;
         }
     private:
         int waitFrame;
         vector<int> acceptKeys;
-        bool inputed;
+        int  inputedKey;
     };
     
-    Timeline() {
+    TL() {
         currentSeq  = NULL;
         frameCount = 0;
         
         
     }
-    ~Timeline() {
+    ~TL() {
         for(vector<Seq*>::iterator it=sequences.begin();it!=sequences.end();it++) {
             delete *it;
         }
@@ -108,16 +112,20 @@ public:
     virtual bool update() {
         frameCount ++;
         if(currentSeq != NULL) {
-            bool finish = currentSeq->update();
-            if(finish) {
-                int nextSeq = seqIdx + 1;
-                if(nextSeq >= sequences.size()) nextSeq = 0;
-                setSeqIdx(nextSeq);
+            string *result = currentSeq->update();
+            if(result != NULL) {
+                setSeqIdx(getNextSeqIdx(result));
+                delete result;
             }
         }
         return false;
     }
     virtual void draw() {}
+    virtual int getNextSeqIdx(string *result) {
+        int nextSeq = seqIdx + 1;
+        if(nextSeq >= sequences.size()) nextSeq = 0;
+        return nextSeq;
+    }
     int getFrameCount() {
         return frameCount;
     }
