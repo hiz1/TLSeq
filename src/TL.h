@@ -9,21 +9,30 @@
 #ifndef katamichi001_TL_h
 #define katamichi001_TL_h
 
+#include "ofMain.h"
+
 class TL;
 
 // DONE:Sequenceを順番に実行
 // DONE:入力処理
 // DONE:Sequenceの返値。Seq終了時に値を返す
 // DONE:Sequenceの途中で別Sequenceに移行←返値によってTL側で次のSeqを決める
-// TODO:Sequence終了時の処理をSeqと戻り値によって変更
-// TODO:TLの並列実行
+// DONE:Sequence終了時の処理をSeqと戻り値によって変更
+// DONE:TLの並列実行
 // TODO:TL間のメッセージング
 // TODO:Sequenceの親子関係（必要？）
 
+template <typename Of, typename What>
+inline bool instanceof(const What w)
+{
+    return dynamic_cast<const Of*>(w) != 0;
+}
+
 class Seq {
 public:
-    Seq(TL &tl) : _tl(tl){
+    Seq(TL &tl, string seqId) : _tl(tl), _seqId(seqId){
         setup();
+
     }
     virtual void setup() {
         _frame = 0;
@@ -34,6 +43,7 @@ public:
     }
     int    frame() { return _frame;}
     TL &tl() { return _tl;}
+    const string &seqId() {return _seqId;}
     virtual void keyPressed(int key) {}
     virtual void keyReleased(int key) {}
     virtual void mouseMoved(int x, int y ) {}
@@ -44,6 +54,7 @@ public:
 private:
     int    _frame;
     TL &_tl;
+    string _seqId;
 };
 
 class TL {
@@ -53,8 +64,8 @@ public:
     public:
         typedef Seq base;
         
-        WaitSeq(TL &phase, int waitFrame)
-        : Seq(phase), waitFrame(waitFrame) {}
+        WaitSeq(TL &phase, string seqId, int waitFrame)
+        : Seq(phase, seqId), waitFrame(waitFrame) {}
         
         virtual string* update() {
             base::update();
@@ -70,8 +81,8 @@ public:
     public:
         typedef Seq base;
         
-        InputSeq(TL &phase, vector<int> acceptKeys, int waitFrame = -1)
-        : Seq(phase),acceptKeys(acceptKeys), waitFrame(waitFrame) {}
+        InputSeq(TL &phase, string seqId, vector<int> acceptKeys, int waitFrame = -1)
+        : Seq(phase, seqId),acceptKeys(acceptKeys), waitFrame(waitFrame) {}
         
         virtual void setup() {
             base::setup();
@@ -101,7 +112,7 @@ public:
     TL() {
         currentSeq  = NULL;
         frameCount = 0;
-        
+
         
     }
     ~TL() {
@@ -114,17 +125,20 @@ public:
         if(currentSeq != NULL) {
             string *result = currentSeq->update();
             if(result != NULL) {
-                setSeqIdx(getNextSeqIdx(result));
+                setSeqIdx(getNextSeqIdx(currentSeq, *result), result);
                 delete result;
             }
         }
         return false;
     }
     virtual void draw() {}
-    virtual int getNextSeqIdx(string *result) {
+    virtual int getNextSeqIdx(Seq *seq, const string &result) {
         int nextSeq = seqIdx + 1;
         if(nextSeq >= sequences.size()) nextSeq = 0;
         return nextSeq;
+    }
+    virtual void setupSeq(const string &result) {
+        currentSeq->setup();
     }
     int getFrameCount() {
         return frameCount;
@@ -132,10 +146,16 @@ public:
     void addSequence(Seq *seq) {
         sequences.push_back(seq);
     }
-    void setSeqIdx(int idx) {
+    void setSeqIdx(int idx, const string *result) {
         seqIdx = idx;
         currentSeq = sequences[idx];
-        currentSeq->setup();
+        setupSeq(result != NULL ? *result : "");
+    }
+    int getSeqIdxWithId(const string &id) {
+        for(int i=0;i<sequences.size();i++) {
+            if(sequences[i]->seqId() == id) return i;
+        }
+        return -1;
     }
     Seq *getSeq() {
         return currentSeq;

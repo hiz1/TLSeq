@@ -22,7 +22,7 @@ public:
     public:
         typedef Seq base;
         
-        TimerSeq(TL &phase, int waitFrame) : Seq(phase) {
+        TimerSeq(TL &phase, string seqId, int waitFrame) : Seq(phase, seqId) {
             setup(waitFrame);
         }
         
@@ -54,10 +54,10 @@ public:
         keys.push_back('z');
         keys.push_back('Z');
         
-        this->addSequence(new TimerSeq(*this, frameLength));
-        this->addSequence(new InputSeq(*this, keys, 30));
-        this->addSequence(new TimerSeq(*this, frameLength*2));
-        this->setSeqIdx(0);
+        this->addSequence(new TimerSeq(*this, "move1", frameLength));
+        this->addSequence(new InputSeq(*this, "input", keys, 60));
+        this->addSequence(new TimerSeq(*this, "move2", frameLength*2));
+        this->setSeqIdx(0, NULL);
         this->x  = 0;
         
     }
@@ -70,9 +70,11 @@ public:
         ofVec2f cpos = pos + ofVec2f(x, 0);
         ofCircle(cpos.x, cpos.y, 10);
     }
-    virtual int getNextSeqIdx(string *result) {
-        if(*result == "z" || *result == "Z") return 0;
-        return base::getNextSeqIdx(result);
+    virtual int getNextSeqIdx(Seq *seq, const string &result) {
+        if(instanceof<InputSeq>(seq)) {
+            if('z' == result[0] || 'Z' == result[0]) return getSeqIdxWithId("move1");
+        }
+        return base::getNextSeqIdx(seq, result);
     }
 private:
     ofVec2f pos;

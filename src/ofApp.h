@@ -28,5 +28,5 @@ class ofApp : public ofBaseApp{
 private:
     ofCamera camera;
     ofVec2f  pos;
-    TL      *tl;
+    vector<TL *> timelines;
 };
