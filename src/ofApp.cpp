@@ -1,24 +1,18 @@
 #include "ofApp.h"
 
-ofVec2f tilePos(int xi, int yi) {
-    int baseX = - (TILECOL * (TILESIZE + MARGIN) - MARGIN) / 2;
-    int baseY = - (TILEROW * (TILESIZE + MARGIN) - MARGIN) / 2;
-    return ofVec2f(baseX + xi * (TILESIZE + MARGIN) + TILESIZE/2, baseY + yi * (TILESIZE + MARGIN) + TILESIZE/2);
-}
+
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofBackground(0);
-    camera.setPosition(0, 0, 700);
-    pos = ofVec2f(int(TILEROW/2), 3);
     
     timelines.push_back(new TimerTL(ofVec2f(10, 10), 400, 120));
     timelines.push_back(new TimerTL(ofVec2f(500, 10), 200, 60));
+    timelines.push_back(new GameTL());
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    camera.lookAt(ofVec3f::zero());
+    
     
     for(TL *tl : timelines) {
         if(tl != NULL) {
@@ -30,30 +24,8 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    camera.begin();
     
-    ofPushMatrix();
-    ofRotate(-20, 1, 0, 0);
-    int baseX = - (TILECOL * (TILESIZE + MARGIN) - MARGIN) / 2;
-    int baseY = - (TILEROW * (TILESIZE + MARGIN) - MARGIN) / 2;
-    for(int xi=0;xi<TILECOL;xi++) {
-        for(int yi=0;yi<TILEROW;yi++) {
-            int x = xi * (TILESIZE + MARGIN);
-            int y = yi * (TILESIZE + MARGIN);
-            ofSetColor(122 + (yi % 2) * 10);
-            ofFill();
-            ofVec2f pos = tilePos(xi, yi);
-            ofRect(pos.x - TILESIZE/2, pos.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        }
-    }
     
-    ofSetColor(255);
-    ofNoFill();
-    ofVec2f p = tilePos(pos.x, pos.y);
-    ofDrawSphere(p.x, p.y, 20, 40);
-    
-    ofPopMatrix();
-    camera.end();
     
     for(TL *tl : timelines) {
         if(tl != NULL) {
@@ -65,11 +37,6 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if(key == OF_KEY_UP   )pos.y ++;
-    if(key == OF_KEY_DOWN )pos.y --;
-    if(key == OF_KEY_LEFT )pos.x --;
-    if(key == OF_KEY_RIGHT)pos.x ++;
-    
     for(TL *tl : timelines) {
         if(tl != NULL) {
             tl->keyPressed(key);

@@ -2,11 +2,9 @@
 
 #include "ofMain.h"
 #include "TimerTL.h"
+#include "GameTL.h"
 
-#define TILESIZE 80
-#define MARGIN   4
-#define TILECOL  12
-#define TILEROW  7
+
 
 class ofApp : public ofBaseApp{
 
@@ -29,4 +27,8 @@ private:
     ofCamera camera;
     ofVec2f  pos;
     vector<TL *> timelines;
+    
+    ofImage *bg;
+    ofImage *player;
+    ofImage *enemy;
 };
