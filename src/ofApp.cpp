@@ -5,6 +5,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
+    
+    
     timelines.push_back(new TimerTL(ofVec2f(10, 10), 400, 120));
     timelines.push_back(new TimerTL(ofVec2f(500, 10), 200, 60));
     timelines.push_back(new GameTL());

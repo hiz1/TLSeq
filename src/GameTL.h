@@ -17,6 +17,12 @@
 #include "TL.h"
 #include "ofMain.h"
 
+ofVec2f charaPos(float xi, float yi) {
+    int baseX = - (TILECOL * (TILESIZE + MARGIN) - MARGIN) / 2;
+    int baseY = - (TILEROW * (TILESIZE + MARGIN) - MARGIN) / 2;
+    return ofVec2f(baseX + xi * (TILESIZE + MARGIN) + TILESIZE/2, baseY + yi * (TILESIZE + MARGIN) + TILESIZE/2);
+}
+
 ofVec2f tilePos(int xi, int yi) {
     int baseX = - (TILECOL * (TILESIZE + MARGIN) - MARGIN) / 2;
     int baseY = - (TILEROW * (TILESIZE + MARGIN) - MARGIN) / 2;
@@ -28,18 +34,49 @@ class GameTL : public TL {
     
 public:
     
-    class InputWaitSeq : public Seq {
+    class MoveSeq : public Seq {
     public:
         typedef Seq base;
-        InputWaitSeq(TL &phase, string seqId) : Seq(phase, seqId) {}
+        MoveSeq(TL &phase, string seqId) : Seq(phase, seqId) {}
+        
+        virtual void setup(const ofParameterGroup *parm) {
+            base::setup(parm);
+            GameTL &t = (GameTL &)tl();
+            
+            maxFrame = 10;
+            prePos = t.pos;
+            
+            int key = parm->get<int>("key");
+            if(key == OF_KEY_UP   )nextPos = t.pos + ofVec2f( 0, 1);
+            if(key == OF_KEY_DOWN )nextPos = t.pos + ofVec2f( 0,-1);
+            if(key == OF_KEY_LEFT )nextPos = t.pos + ofVec2f(-1,0);
+            if(key == OF_KEY_RIGHT)nextPos = t.pos + ofVec2f( 1,0);
+            
+        }
+        
+        virtual bool update(ofParameterGroup *parm) {
+            base::update(parm);
+            GameTL &t = (GameTL &)tl();
+            
+            t.pos = ofVec2f(ofMap(frame(), 0, maxFrame, t.pos.x, nextPos.x),
+                            ofMap(frame(), 0, maxFrame, t.pos.y, nextPos.y));
+            
+            if(frame() >= maxFrame) {
+                t.pos = nextPos;
+                return true;
+            }
+            return false;
+            
+        }
 
         virtual void keyPressed(int key) {
             GameTL &t = (GameTL &)tl();
-            if(key == OF_KEY_UP   )t.pos.y ++;
-            if(key == OF_KEY_DOWN )t.pos.y --;
-            if(key == OF_KEY_LEFT )t.pos.x --;
-            if(key == OF_KEY_RIGHT)t.pos.x ++;
+            
         }
+    private:
+        int     maxFrame;
+        ofVec2f prePos;
+        ofVec2f nextPos;
     };
     
     GameTL() : TL() {
@@ -55,7 +92,14 @@ public:
         enemy->loadImage("mon_139.png");
         enemy->setAnchorPercent(0.5, 0.0);
         
-        this->addSequence(new InputWaitSeq(*this, "input"));
+        vector<int> keys;
+        keys.push_back(OF_KEY_UP);
+        keys.push_back(OF_KEY_DOWN);
+        keys.push_back(OF_KEY_LEFT);
+        keys.push_back(OF_KEY_RIGHT);
+        
+        this->addSequence(new InputSeq(*this, "input", keys));
+        this->addSequence(new MoveSeq( *this, "move"));
         this->setSeqIdx(0, NULL);
     }
     virtual bool update() {
@@ -85,26 +129,73 @@ public:
         ofVec2f p;
         
         
-        // 移動先タイル描画
-        //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        ofSetColor(40,120,255,122);
-        p = tilePos(pos.x-1, pos.y);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        p = tilePos(pos.x+1, pos.y);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        p = tilePos(pos.x  , pos.y-1);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        p = tilePos(pos.x  , pos.y+1);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if(getSeq().seqId() == "input") {
+            // プレイヤー位置タイル描画
+            p = charaPos(pos.x, pos.y);
+            ofSetColor(255,255,255,122);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            
+            // 敵位置タイル描画
+            p = tilePos(8, 2);
+            ofSetColor(255,255,255,122);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            ofSetColor(255);
+            
+            // 移動先タイル描画
+            //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            
+            // プレイヤー移動先
+            ofSetColor(40,120,255,122);
+            p = tilePos(pos.x-1, pos.y);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(pos.x+1, pos.y);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(pos.x  , pos.y-1);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(pos.x  , pos.y+1);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            
+            // 敵移動先
+            ofSetColor(255,255,40,122);
+//            p = tilePos(8-1, 2);
+//            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(8+1, 2);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(8  , 2-1);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            p = tilePos(8  , 2+1);
+            ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
+            
+            // 攻撃先タイル描画
+            ofNoFill();
+            int lineWidth = 10;
+            ofSetLineWidth(lineWidth);
+            
+            // 敵攻撃先
+            ofSetColor(255,40,40,180);
+            p = tilePos(8-1, 2);
+            ofRect(p.x - TILESIZE/2+lineWidth/4, p.y - TILESIZE/2+lineWidth/4, 0, TILESIZE-lineWidth/2, TILESIZE-lineWidth/2);
+            p = tilePos(8-2, 2);
+            ofRect(p.x - TILESIZE/2+lineWidth/4, p.y - TILESIZE/2+lineWidth/4, 0, TILESIZE-lineWidth/2, TILESIZE-lineWidth/2);
+            
+            // プレイヤー攻撃先
+            ofSetLineWidth(lineWidth/2);
+            ofSetColor(40,255,180,140);
+            p = tilePos(pos.x+1, pos.y);
+            ofRect(p.x - TILESIZE/2+lineWidth/4, p.y - TILESIZE/2+lineWidth/4, 0, TILESIZE-lineWidth/2, TILESIZE-lineWidth/2);
+            p = tilePos(pos.x+1, pos.y+1);
+            ofRect(p.x - TILESIZE/2+lineWidth/4, p.y - TILESIZE/2+lineWidth/4, 0, TILESIZE-lineWidth/2, TILESIZE-lineWidth/2);
+            p = tilePos(pos.x+1, pos.y-1);
+            ofRect(p.x - TILESIZE/2+lineWidth/4, p.y - TILESIZE/2+lineWidth/4, 0, TILESIZE-lineWidth/2, TILESIZE-lineWidth/2);
+            
+            ofSetLineWidth(1);
+            ofFill();
+        }
         
         
         
         // プレイヤー描画
-        p = tilePos(pos.x, pos.y);
-        ofSetColor(255,255,255,122);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        
+        p = charaPos(pos.x, pos.y);
         ofSetColor(255);
         ofPushMatrix();
         ofTranslate(p.x, p.y - TILESIZE/4, 0);
@@ -115,10 +206,6 @@ public:
         
         // 敵描画
         p = tilePos(8, 2);
-        ofSetColor(255,255,255,122);
-        ofRect(p.x - TILESIZE/2, p.y - TILESIZE/2, 0, TILESIZE, TILESIZE);
-        ofSetColor(255);
-        
         ofPushMatrix();
         ofTranslate(p.x, p.y - TILESIZE/4, 0);
         ofRotate(20, 1, 0, 0);

@@ -43,7 +43,7 @@ public:
     }
     int    frame() { return _frame;}
     TL &tl() { return _tl;}
-    const string &seqId() {return _seqId;}
+    const string &seqId() const {return _seqId;}
     virtual void keyPressed(int key) {}
     virtual void keyReleased(int key) {}
     virtual void mouseMoved(int x, int y ) {}
@@ -161,8 +161,8 @@ public:
         }
         return -1;
     }
-    Seq *getSeq() {
-        return currentSeq;
+    const Seq &getSeq() {
+        return *currentSeq;
     }
     virtual void keyPressed(int key) {
         currentSeq->keyPressed(key);
