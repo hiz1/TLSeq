@@ -31,15 +31,15 @@ inline bool instanceof(const What w)
 class Seq {
 public:
     Seq(TL &tl, string seqId) : _tl(tl), _seqId(seqId){
-        setup();
+        setup(NULL);
 
     }
-    virtual void setup() {
+    virtual void setup(const ofParameterGroup *parm) {
         _frame = 0;
     }
-    virtual string* update() {
+    virtual bool update(ofParameterGroup *param) {
         _frame ++;
-        return NULL;
+        return false;
     }
     int    frame() { return _frame;}
     TL &tl() { return _tl;}
@@ -67,10 +67,14 @@ public:
         WaitSeq(TL &phase, string seqId, int waitFrame)
         : Seq(phase, seqId), waitFrame(waitFrame) {}
         
-        virtual string* update() {
-            base::update();
-            if(frame() >= waitFrame)return new string;
-            return NULL;
+        virtual bool update(ofParameterGroup *param) {
+            ofParameterGroup result;
+            base::update(param);
+            
+            if(frame() >= waitFrame) {
+                return true;
+            }
+            return false;
         }
     private:
         const int waitFrame;
@@ -84,19 +88,20 @@ public:
         InputSeq(TL &phase, string seqId, vector<int> acceptKeys, int waitFrame = -1)
         : Seq(phase, seqId),acceptKeys(acceptKeys), waitFrame(waitFrame) {}
         
-        virtual void setup() {
-            base::setup();
+        virtual void setup(const ofParameterGroup *parm) {
+            base::setup(parm);
             inputedKey = -1;
         }
         
-        virtual string* update() {
-            base::update();
+        virtual bool update(ofParameterGroup *parm) {
+            base::update(parm);
             if(inputedKey >= 0) {
-                char result[1] = {char(inputedKey)};
-                return new string(result);
+                ofParameter<int> keyParm("key", inputedKey);
+                parm->add(keyParm);
+                return true;
             }
             if(waitFrame >= 0 && frame() >= waitFrame)return new string();
-            return NULL;
+            return false;
         }
         
         virtual void keyPressed(int key) {
@@ -123,22 +128,21 @@ public:
     virtual bool update() {
         frameCount ++;
         if(currentSeq != NULL) {
-            string *result = currentSeq->update();
-            if(result != NULL) {
-                setSeqIdx(getNextSeqIdx(currentSeq, *result), result);
-                delete result;
+            ofParameterGroup parm;
+            if(currentSeq->update(&parm)) {
+                setSeqIdx(getNextSeqIdx(currentSeq, &parm), &parm);
             }
         }
         return false;
     }
     virtual void draw() {}
-    virtual int getNextSeqIdx(Seq *seq, const string &result) {
+    virtual int getNextSeqIdx(Seq *seq, ofParameterGroup *parm) {
         int nextSeq = seqIdx + 1;
         if(nextSeq >= sequences.size()) nextSeq = 0;
         return nextSeq;
     }
-    virtual void setupSeq(const string &result) {
-        currentSeq->setup();
+    virtual void setupSeq(ofParameterGroup *parm) {
+        currentSeq->setup(parm);
     }
     int getFrameCount() {
         return frameCount;
@@ -146,10 +150,10 @@ public:
     void addSequence(Seq *seq) {
         sequences.push_back(seq);
     }
-    void setSeqIdx(int idx, const string *result) {
+    void setSeqIdx(int idx, ofParameterGroup *parm) {
         seqIdx = idx;
         currentSeq = sequences[idx];
-        setupSeq(result != NULL ? *result : "");
+        setupSeq(parm);
     }
     int getSeqIdxWithId(const string &id) {
         for(int i=0;i<sequences.size();i++) {

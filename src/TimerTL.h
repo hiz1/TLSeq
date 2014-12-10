@@ -23,16 +23,16 @@ public:
         typedef Seq base;
         
         TimerSeq(TL &phase, string seqId, int waitFrame) : Seq(phase, seqId) {
-            setup(waitFrame);
-        }
-        
-        virtual void setup(int waitFrame) {
-            base::setup();
+            setup(NULL);
             this->waitFrame = waitFrame;
         }
         
-        virtual string *update() {
-            base::update();
+        virtual void setup(const ofParameterGroup *parm) {
+            base::setup(parm);
+        }
+        
+        virtual bool update(ofParameterGroup *parm) {
+            base::update(parm);
             TimerTL &t = (TimerTL &)tl();
             t.x = ofMap(frame(), 0, waitFrame-1, 0, t.width, true);
             if(frame() >= waitFrame)return new string("");
@@ -54,6 +54,7 @@ public:
         keys.push_back('z');
         keys.push_back('Z');
         
+        
         this->addSequence(new TimerSeq(*this, "move1", frameLength));
         this->addSequence(new InputSeq(*this, "input", keys, 60));
         this->addSequence(new TimerSeq(*this, "move2", frameLength*2));
@@ -70,11 +71,14 @@ public:
         ofVec2f cpos = pos + ofVec2f(x, 0);
         ofCircle(cpos.x, cpos.y, 10);
     }
-    virtual int getNextSeqIdx(Seq *seq, const string &result) {
+    virtual int getNextSeqIdx(Seq *seq, ofParameterGroup *parm) {
         if(instanceof<InputSeq>(seq)) {
-            if('z' == result[0] || 'Z' == result[0]) return getSeqIdxWithId("move1");
+            if(parm != NULL && parm->contains("key")) {
+                int key = parm->get<int>("key");
+                if('z' == key || 'Z' == key) return getSeqIdxWithId("move1");
+            }
         }
-        return base::getNextSeqIdx(seq, result);
+        return base::getNextSeqIdx(seq, parm);
     }
 private:
     ofVec2f pos;
