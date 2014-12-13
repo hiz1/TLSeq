@@ -26,7 +26,7 @@ class ofApp : public ofBaseApp{
 private:
     ofCamera camera;
     ofVec2f  pos;
-    vector<TL *> timelines;
+    vector<ofxTL *> timelines;
     
     ofImage *bg;
     ofImage *player;

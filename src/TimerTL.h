@@ -9,20 +9,25 @@
 #ifndef katamichi001_TimerTL_h
 #define katamichi001_TimerTL_h
 
-#include "TL.h"
+#include "ofxTL.h"
 #include "ofMain.h"
 
+template <typename Of, typename What>
+inline bool instanceof(const What w)
+{
+    return dynamic_cast<const Of*>(w) != 0;
+}
 
 
-class TimerTL : public TL {
-    typedef TL base;
+class TimerTL : public ofxTL {
+    typedef ofxTL base;
     
 public:
-    class TimerSeq : public Seq {
+    class TimerSeq : public ofxSeq {
     public:
-        typedef Seq base;
+        typedef ofxSeq base;
         
-        TimerSeq(TL &phase, string seqId, int waitFrame) : Seq(phase, seqId) {
+        TimerSeq(ofxTL &phase, string seqId, int waitFrame) : ofxSeq(phase, seqId) {
             setup(NULL);
             this->waitFrame = waitFrame;
         }
@@ -35,17 +40,23 @@ public:
             base::update(parm);
             TimerTL &t = (TimerTL &)tl();
             t.x = ofMap(frame(), 0, waitFrame-1, 0, t.width, true);
-            if(frame() >= waitFrame)return new string("");
-            return NULL;
+            if(frame() >= waitFrame) {
+                ofParameterGroup param;
+                ofParameter<int> keyParam("input:key", OF_KEY_RIGHT);
+                param.add(keyParam);
+                sendMessage(param);
+                return true;
+            }
+            return false;
         }
     private:
         int waitFrame;
     };
     
-    TimerTL() : TL() {
+    TimerTL() : ofxTL() {
     }
     
-    TimerTL(ofVec2f pos, int width, int frameLength) : TL() {
+    TimerTL(ofVec2f pos, int width, int frameLength) : ofxTL() {
         this->pos = pos;
         this->width = width;
         this->frameLength = frameLength;
@@ -71,7 +82,7 @@ public:
         ofVec2f cpos = pos + ofVec2f(x, 0);
         ofCircle(cpos.x, cpos.y, 10);
     }
-    virtual int getNextSeqIdx(Seq *seq, ofParameterGroup *parm) {
+    virtual int getNextSeqIdx(ofxSeq *seq, ofParameterGroup *parm) {
         if(instanceof<InputSeq>(seq)) {
             if(parm != NULL && parm->contains("key")) {
                 int key = parm->get<int>("key");

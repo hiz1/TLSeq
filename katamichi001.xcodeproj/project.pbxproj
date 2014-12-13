@@ -59,9 +59,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		391CE2C31A3BC7230073553C /* ofxTL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxTL.h; sourceTree = "<group>"; };
 		393B1B731A386DE600B9B1B0 /* GameTL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameTL.h; sourceTree = "<group>"; };
 		396F11D11A2F316700034FCF /* TimerTL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TimerTL.h; sourceTree = "<group>"; };
-		396F11D21A2F31AA00034FCF /* TL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TL.h; sourceTree = "<group>"; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
@@ -114,9 +114,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		391CE2C11A3BC7230073553C /* ofxTL */ = {
+			isa = PBXGroup;
+			children = (
+				391CE2C21A3BC7230073553C /* src */,
+			);
+			name = ofxTL;
+			sourceTree = "<group>";
+		};
+		391CE2C21A3BC7230073553C /* src */ = {
+			isa = PBXGroup;
+			children = (
+				391CE2C31A3BC7230073553C /* ofxTL.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxTL/src;
+			sourceTree = "<group>";
+		};
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				391CE2C11A3BC7230073553C /* ofxTL */,
 			);
 			name = addons;
 			sourceTree = "<group>";
@@ -187,7 +205,6 @@
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
 				396F11D11A2F316700034FCF /* TimerTL.h */,
-				396F11D21A2F31AA00034FCF /* TL.h */,
 				393B1B731A386DE600B9B1B0 /* GameTL.h */,
 			);
 			path = src;
@@ -448,6 +465,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -533,6 +551,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

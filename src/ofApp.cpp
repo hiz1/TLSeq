@@ -16,7 +16,7 @@ void ofApp::setup(){
 void ofApp::update(){
     
     
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             if(tl->update()) tl = NULL;
         }
@@ -29,7 +29,7 @@ void ofApp::draw(){
     
     
     
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->draw();
         }
@@ -39,7 +39,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->keyPressed(key);
         }
@@ -48,7 +48,7 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->keyReleased(key);
         }
@@ -57,7 +57,7 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->mouseMoved(x, y);
         }
@@ -66,7 +66,7 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->mouseDragged(x, y, button);
         }
@@ -76,7 +76,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->mousePressed(x, y, button);
         }
@@ -85,7 +85,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    for(TL *tl : timelines) {
+    for(ofxTL *tl : timelines) {
         if(tl != NULL) {
             tl->mouseReleased(x, y, button);
         }
@@ -99,11 +99,6 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
-    for(TL *tl : timelines) {
-        if(tl != NULL) {
-            tl->gotMessage(msg);
-        }
-    }
 }
 
 //--------------------------------------------------------------

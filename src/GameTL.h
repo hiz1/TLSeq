@@ -14,7 +14,7 @@
 #define TILECOL  12
 #define TILEROW  7
 
-#include "TL.h"
+#include "ofxTL.h"
 #include "ofMain.h"
 
 ofVec2f charaPos(float xi, float yi) {
@@ -29,15 +29,15 @@ ofVec2f tilePos(int xi, int yi) {
     return ofVec2f(baseX + xi * (TILESIZE + MARGIN) + TILESIZE/2, baseY + yi * (TILESIZE + MARGIN) + TILESIZE/2);
 }
 
-class GameTL : public TL {
-    typedef TL base;
+class GameTL : public ofxTL {
+    typedef ofxTL base;
     
 public:
     
-    class MoveSeq : public Seq {
+    class MoveSeq : public ofxSeq {
     public:
-        typedef Seq base;
-        MoveSeq(TL &phase, string seqId) : Seq(phase, seqId) {}
+        typedef ofxSeq base;
+        MoveSeq(ofxTL &phase, string seqId) : ofxSeq(phase, seqId) {}
         
         virtual void setup(const ofParameterGroup *parm) {
             base::setup(parm);
@@ -71,7 +71,6 @@ public:
 
         virtual void keyPressed(int key) {
             GameTL &t = (GameTL &)tl();
-            
         }
     private:
         int     maxFrame;
@@ -79,7 +78,7 @@ public:
         ofVec2f nextPos;
     };
     
-    GameTL() : TL() {
+    GameTL() : ofxTL() {
         ofBackground(0);
         camera.setPosition(0, 0, 700);
         pos = ofVec2f(int(TILEROW/2), 3);
