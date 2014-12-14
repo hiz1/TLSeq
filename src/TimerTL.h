@@ -19,6 +19,7 @@ inline bool instanceof(const What w)
 }
 
 
+
 class TimerTL : public ofxTL {
     typedef ofxTL base;
     
@@ -41,10 +42,10 @@ public:
             TimerTL &t = (TimerTL &)tl();
             t.x = ofMap(frame(), 0, waitFrame-1, 0, t.width, true);
             if(frame() >= waitFrame) {
-                ofParameterGroup param;
-                ofParameter<int> keyParam("input:key", OF_KEY_RIGHT);
-                param.add(keyParam);
-                sendMessage(param);
+//                ofParameterGroup param;
+//                ofParameter<int> keyParam("input:key", OF_KEY_RIGHT);
+//                param.add(keyParam);
+//                sendMessage(param);
                 return true;
             }
             return false;
@@ -65,14 +66,22 @@ public:
         keys.push_back('z');
         keys.push_back('Z');
         
-        
         this->addSequence(new TimerSeq(*this, "move1", frameLength));
-        this->addSequence(new InputSeq(*this, "input", keys, 60));
+        this->addSequence(new InputSeq(*this, "input", keys, 60), TimerTL::nextSeqFunc);
         this->addSequence(new TimerSeq(*this, "move2", frameLength*2));
         this->setSeqIdx(0, NULL);
         this->x  = 0;
         
     }
+    
+    static int nextSeqFunc(ofParameterGroup *parm, int seqIdx) {
+        if(parm->contains("key")) {
+            int key = parm->get<int>("key");
+            if('z' == key || 'Z' == key) return seqIdx-1;
+        }
+        return -1;
+    };
+    
     virtual bool update() {
         return base::update();
     }
@@ -81,15 +90,6 @@ public:
         ofLine(pos, pos + ofVec2f(width, 0));
         ofVec2f cpos = pos + ofVec2f(x, 0);
         ofCircle(cpos.x, cpos.y, 10);
-    }
-    virtual int getNextSeqIdx(ofxSeq *seq, ofParameterGroup *parm) {
-        if(instanceof<InputSeq>(seq)) {
-            if(parm != NULL && parm->contains("key")) {
-                int key = parm->get<int>("key");
-                if('z' == key || 'Z' == key) return getSeqIdxWithId("move1");
-            }
-        }
-        return base::getNextSeqIdx(seq, parm);
     }
 private:
     ofVec2f pos;
